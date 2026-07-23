@@ -51,11 +51,9 @@ async def nuke_all(client: Client, chat_id: int):
         pass
 
 
-# ─── ذخیره پیام‌های ارسالی ─────────────────────────────────────────────────
 @app.on_raw_update()
 async def raw_handler(client, update, users, chats):
 
-    # ══ ذخیره پیام‌های خودمون (هم معمولی، هم ناشناس) ════════════════════════
     if isinstance(update, raw_types.UpdateNewChannelMessage):
         msg = update.message
         if not isinstance(msg, raw_types.Message):
@@ -69,7 +67,6 @@ async def raw_handler(client, update, users, chats):
         if chat_id not in TARGET_CHATS:
             return
 
-        # ✅ تشخیص پیام خودمون — هم حالت معمولی هم ناشناس
         from_id = getattr(msg, "from_id", None)
         is_mine = False
 
@@ -84,7 +81,6 @@ async def raw_handler(client, update, users, chats):
             store_msg(chat_id, msg.id)
             return
 
-        # ══ ریپلای به پیام ما ════════════════════════════════════════════════
         reply = getattr(msg, "reply_to", None)
         if not reply:
             return
@@ -93,7 +89,6 @@ async def raw_handler(client, update, users, chats):
         if replied_id and replied_id in my_messages.get(chat_id, set()):
             asyncio.create_task(nuke(client, chat_id, replied_id))
 
-    # ══ تایپینگ در سوپرگروپ ══════════════════════════════════════════════════
     elif isinstance(update, raw_types.UpdateChannelUserTyping):
         if update.channel_id not in TARGET_RAW_IDS:
             return
