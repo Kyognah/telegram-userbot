@@ -16,10 +16,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyrogram tgcrypto uvloop pynacl
+          pip install pyrogram tgcrypto
 
-      - name: Run Userbot (1 hour)
-        run: timeout 3600 python main.py
+      - name: Run Userbot with full error output
+        run: |
+          python -u main.py || echo "=== SCRIPT EXITED WITH ERROR ==="
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}

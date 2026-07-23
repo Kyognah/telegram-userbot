@@ -1,6 +1,3 @@
-import uvloop
-uvloop.install()
-
 from pyrogram import Client, raw
 from pyrogram.raw.types import UpdateNewMessage, UpdateUserTyping, UpdateChatUserTyping
 
