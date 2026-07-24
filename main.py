@@ -1,6 +1,7 @@
 import os
 import asyncio
 from pyrogram import Client, raw
+from pyrogram.raw.types import PeerUser, PeerChannel
 
 API_ID   = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
@@ -20,10 +21,12 @@ app = Client(
 
 my_messages = {}
 peer_cache = {}
+MY_USER_ID = None
 
 
 @app.on_raw_update()
 async def ultra_fast(client, update, users, chats):
+    global MY_USER_ID
 
     if isinstance(update, raw.types.UpdateNewChannelMessage):
         msg = update.message
@@ -38,7 +41,24 @@ async def ultra_fast(client, update, users, chats):
         if chat_id not in TARGET_CHATS:
             return
 
+        is_mine = False
+
         if getattr(msg, "out", False):
+            is_mine = True
+
+        from_id = getattr(msg, "from_id", None)
+        if from_id:
+            if isinstance(from_id, PeerUser):
+                if MY_USER_ID is None:
+                    me = await client.get_me()
+                    MY_USER_ID = me.id
+                if from_id.user_id == MY_USER_ID:
+                    is_mine = True
+            elif isinstance(from_id, PeerChannel):
+                if from_id.channel_id == peer.channel_id:
+                    is_mine = True
+
+        if is_mine:
             my_messages.setdefault(chat_id, set()).add(msg.id)
             return
 
@@ -54,15 +74,19 @@ async def ultra_fast(client, update, users, chats):
         if any(w in text for w in TRIGGER_WORDS):
             try:
                 if chat_id not in peer_cache:
-                    peer_cache[chat_id] = await client.resolve_peer(chat_id)
-                await client.invoke(raw.functions.messages.DeleteMessages(
-                    peer=peer_cache[chat_id],
-                    id=[replied_id],
-                    revoke=True
-                ))
+                    peer_obj = await client.resolve_peer(chat_id)
+                    peer_cache[chat_id] = peer_obj
+
+                await client.invoke(
+                    raw.functions.messages.DeleteMessages(
+                        peer=peer_cache[chat_id],
+                        id=[replied_id],
+                        revoke=True
+                    )
+                )
                 my_messages[chat_id].discard(replied_id)
-            except:
-                pass
+            except Exception as e:
+                print(f"[ERROR] {e}")
 
 
 app.run()
