@@ -18,11 +18,9 @@ jobs:
         run: |
           pip install pyrogram tgcrypto
 
-      - name: Run Userbot with full error output
-        run: |
-          python -u main.py || echo "=== SCRIPT EXITED WITH ERROR ==="
+      - name: Run Userbot (3 hours)
+        run: timeout 10800 python main.py
         env:
           API_ID: ${{ secrets.API_ID }}
           API_HASH: ${{ secrets.API_HASH }}
           SESSION_STRING: ${{ secrets.SESSION_STRING }}
-          ADMIN_ID: ${{ secrets.ADMIN_ID }}
