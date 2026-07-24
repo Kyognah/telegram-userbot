@@ -9,7 +9,11 @@ SESSION  = os.getenv("SESSION_STRING")
 
 TARGET_CHATS = {-1002866597350, -1003984885147}
 
-TRIGGER_WORDS = {"گزارش", "report", "@admin"}
+TRIGGER_WORDS = {
+    "گزارش", "report", "@admin",
+    "صیک", "سیک", "اخطار", "بن", "سکوت",
+    "ban", "mute"
+}
 
 def full_id(channel_id: int) -> int:
     return -(1_000_000_000_000 + channel_id)
