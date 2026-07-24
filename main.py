@@ -20,12 +20,10 @@ app = Client(
 
 my_messages = {}
 peer_cache = {}
-my_user_id = None
 
 
 @app.on_raw_update()
 async def ultra_fast(client, update, users, chats):
-    global my_user_id
 
     if isinstance(update, raw.types.UpdateNewChannelMessage):
         msg = update.message
@@ -40,19 +38,7 @@ async def ultra_fast(client, update, users, chats):
         if chat_id not in TARGET_CHATS:
             return
 
-        if my_user_id is None:
-            me = await client.get_me()
-            my_user_id = me.id
-
-        from_id = getattr(msg, "from_id", None)
-        is_mine = False
-
-        if isinstance(from_id, raw.types.PeerUser):
-            is_mine = (from_id.user_id == my_user_id)
-        elif isinstance(from_id, raw.types.PeerChannel):
-            is_mine = (from_id.channel_id == peer.channel_id)
-
-        if is_mine:
+        if getattr(msg, "out", False):
             my_messages.setdefault(chat_id, set()).add(msg.id)
             return
 
